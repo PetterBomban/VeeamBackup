@@ -8,20 +8,35 @@
     Or you can use tags like:
         "WIN", "LIN", "OTH"
 .EXAMPLE
-
+    Start-VeeamZip `
+        -ServerTypes "WIN","WEB" `
+        -Destination "F:\Veeam\" `
+        -Compression 5 `
+        -Autodelete Never
 .EXAMPLE
-
+    Start-VeeamZip `
+        -ServerTypes "ADServer", "Webserver", "WSUS" `
+        -Destination "F:\Veeam\" `
+        -Compression 0 `
+        -Autodelete In1Month `
+        -DisableQuiesce
 #>
 Function Start-VeeamZip()
 {
     param
     (
         [Parameter(Mandatory=$True)][string[]]$ServerTypes = $(),
-        [Parameter(Mandatory=$False)][string[]]$ExcludedServers = $(), ## Planned feature
         [Parameter(Mandatory=$True)][string]$Destination,
         [Parameter(Mandatory=$True)][ValidateSet(0,4,5,6,9)][int]$Compression,
-        [Parameter(Mandatory=$True)[int]$KeepBackupsFor, ## Days
-
+        [Parameter(Mandatory=$true)][ValidateSet(
+            "Never",
+            "Tonight",
+            "TomorrowNight",
+            "In3days",
+            "In1Week",
+            "In2Weeks",
+            "In1Month"
+        )][string]$Autodelete, #Doesn't work?
         [switch]$DisableQuiesce
     )
 
@@ -45,6 +60,8 @@ Function Start-VeeamZip()
 
     ## Get date in a format like this: 18.03.2016
     $DateT = Get-Date -Format d
+    ## Days to keep backups for
+    $KeepBackupsFor = 4 #days
 
     <#
         Checks for older backups and deletes them.
@@ -79,7 +96,6 @@ Function Start-VeeamZip()
             $VMName = $VM.Name
 
             ## We don't backup Logos (As we already have a backup of this script..)
-            ## THIS IS TEMPORARY UNTIL $ExcludedServers IS IMPLEMENTED.
             if ( $VMName -eq "WIN - Logos" -or $VMName -like "*Apoc*" )
             {
                 Write-Output "Detected $VMName. This is flagged as do not backup, skipping.."
@@ -114,7 +130,7 @@ Function Start-VeeamZip()
                     -Entity $VM `
                     -Folder $BackupPath `
                     -Compression $Compression `
-                    -AutoDelete Never `
+                    -AutoDelete $Autodelete `
                     -RunAsync `
                     -DisableQuiesce
             }
@@ -124,7 +140,7 @@ Function Start-VeeamZip()
                     -Entity $VM `
                     -Folder $BackupPath `
                     -Compression $Compression `
-                    -AutoDelete Never `
+                    -AutoDelete $Autodelete `
                     -RunAsync
             }
 
@@ -134,4 +150,4 @@ Function Start-VeeamZip()
     
 }
 
-Start-VeeamZip -ServerTypes "WIN", "LIN", "WEB", "OTH" -Destination "E:\Veeam" -Compression 6 -KeepBackupsFor 4 -DisableQuiesce
+Start-VeeamZip -ServerTypes "WIN", "LIN", "WEB", "OTH" -Destination "E:\Veeam" -Compression 6 -Autodelete Never -DisableQuiesce
