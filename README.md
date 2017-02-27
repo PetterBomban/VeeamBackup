@@ -1,12 +1,12 @@
 # VeeamBackup
 
-This script is used for automatic backups of vSphere VM's, using Veeam. You need to run this script on a server that has the Veeam management console (and PoSh module) installed.
+This script is used for automatic backups of vSphere VM's, using Veeam. You need to run this script on a server that has the Veeam management console (and PoSh module) installed. The script works perfectly with the free version of Veeam B&R.
 
 ## Usage
 
 ```PowerShell
-Start-VeeamZip [-ServerTypes string[]] [-Skip string[]] [-Destination string]
-                [-KeepBackupsFor string[]] [-Compression int] [-DisableQuiesce]  
+Start-VeeamZip [-ServerTypes <string[]>] [-Skip <string[]>] [-Destination <string>]
+                [-KeepBackupsFor <int>] [-Compression <int>] [-DisableQuiesce]  
 ```
 
 ### -ServerTypes *string[]*
@@ -19,7 +19,7 @@ Exact name of server(s) to skip.
 Destination of the backup. If $Destination = "F:\Backup", then the individual servers will be stored under:
 `"F:\Backup\27.02.2017\WIN - DomainController\"`
 
-### -KeepBackupsFor *string[]*
+### -KeepBackupsFor *int*
 This specifies number of days that old backups are kept for. 0 = Keep forever
 
 ### -Compression *int*
