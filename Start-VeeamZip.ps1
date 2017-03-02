@@ -100,7 +100,7 @@ Function Start-VeeamZip()
             if ($SkipServer) { continue }
 
             ## Creates a new path for the backups
-            $BackupPath = Join-Path -Path $Destination -ChildPath "$Date/$VMName"
+            $BackupPath = Join-Path -Path $Destination -ChildPath "$DateT/$VMName"
             New-Item -ItemType Directory -Path $BackupPath
             
             ## Runs the Veeam backup. 
