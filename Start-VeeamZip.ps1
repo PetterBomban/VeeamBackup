@@ -53,19 +53,27 @@ Function Start-VeeamZip()
     # Compares the date of a backup to the current date.
     # If the difference is greater than $KeepBackupsFor, it deletes the folder.
     # Skips if $KeepBackupsFor -eq 0 (Backups are kept forever)
-    Get-ChildItem -Path $Destination | ForEach-Object {
-        if ($KeepBackupsFor -eq 0) { return }
-        $ItemDate = $_.Name
-        $Timespan = New-TimeSpan -Start $ItemDate -End $DateT
-        Write-Output $ItemDate
-        Write-Output "$($Timespan.TotalDays) - $ItemDate"
-        if ( $($Timespan.TotalDays) -gt $KeepBackupsFor )
-        {
-            Write-Output "This is an old backup, deleting.."
-            Remove-Item -Path "$Destination\$ItemDate" -Recurse
+    $Backups = Get-ChildItem -Path $Destination
+
+    ## Will skip deleting old backups if the number of folders are less than
+    ## $KeepBackupsFor. This stops Veeam from deleting backups if there are
+    ## less folders than there should be (which would indicate a problem with the backups)
+    if (!($Backups.Count -lt $KeepBackupsFor))
+    {
+        $Backups | ForEach-Object {
+            if ($KeepBackupsFor -eq 0) { return }
+            $ItemDate = $_.Name
+            $Timespan = New-TimeSpan -Start $ItemDate -End $DateT
+            Write-Output $ItemDate
+            Write-Output "$($Timespan.TotalDays) - $ItemDate"
+            if ( $($Timespan.TotalDays) -gt $KeepBackupsFor )
+            {
+                Write-Output "This is an old backup, deleting.."
+                Remove-Item -Path "$Destination\$ItemDate" -Recurse
+            }
         }
     }
-
+    
     Write-Output "STARTING BACKUP..."
     
     ## Foreach Servertype (or individual server)
